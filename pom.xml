@@ -131,7 +131,7 @@
     <snapshotRepository>
       <id>deployment</id>
       <name>my snapshot repository</name>
-      <url>http://13.235.243.190:8080/nexus/content/repositories/snapshots/</url>
+      <url>http://13.235.243.190:8080/nexus/content/repositories/snapshots//</url>
     </snapshotRepository>
     <repository>
       <id>deployment</id>
