@@ -5,6 +5,13 @@ def remote = [:]
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
+def remote = [:]
+    	tomcat.name = 'deploy'
+    	tomcat.host = '192.168.56.65'
+    	tomcat.user = 'tomcat'
+    	tomcat.password = 'welcome'
+    	tomcat.allowAnyHosts = true
+
 pipeline {
     
 	agent none
@@ -107,7 +114,7 @@ pipeline {
                 mv *.war webapp.war'''	
 		    }
 
-		    stage('Deploy-to-AnsibleStage') {
+		    stage('Deploy') {
 		     agent {
 		        label 'slave'
 		    }
