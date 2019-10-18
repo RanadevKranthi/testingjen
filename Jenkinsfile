@@ -1,7 +1,7 @@
 def mvnHome
 def remote = [:]
     	remote.name = 'deploy'
-    	remote.host = '192.168.33.15'
+    	remote.host = '192.168.33.20'
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
@@ -16,7 +16,7 @@ pipeline {
 		        label 'slave'
 		    }
 		    steps {
-			    git 'https://github.com/venkat09docs/Maven-Java-Project.git'
+			    git 'https://github.com/RanadevKranthi/Maven-Java-Project.git'
 			    stash 'Source'
 			    script{
 			        mvnHome = tool 'maven3.6'
@@ -59,7 +59,7 @@ pipeline {
 		    //SCP-Publisher Plugin (Optional)
 		    steps {
 		        //sshScript remote: remote, script: "abc.sh"  	
-			sshPut remote: remote, from: 'target/java-maven-1.0-SNAPSHOT.war', into: '/root/workspace/stagingServer/webapps'		        
+			sshPut remote: remote, from: 'target/java-maven-1.0-SNAPSHOT.war', into: '/root/stagingServer/webapps'		        
 		    }
     	}
     	stage ('Integration-Test') {
