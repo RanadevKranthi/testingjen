@@ -97,7 +97,7 @@ pipeline {
 				}
 			}
 		}
-		stage ('Prod-Deploy') {
+		stage ('Prod-Deploy'){
 			agent {
 				label "slave"
             }
@@ -112,6 +112,7 @@ pipeline {
 				sh label: '', script: '''cd target
                 rm -rf webapp.war
                 mv *.war webapp.war'''	
+			}
 			}				
 			}
 			stage('Deploy-to-AnsibleStage') {
