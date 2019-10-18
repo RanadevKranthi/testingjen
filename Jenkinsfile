@@ -1,18 +1,10 @@
-  def mvnHome
-  def remote = [:]
+def mvnHome
+def remote = [:]
     	remote.name = 'deploy'
-    	remote.host = '192.168.33.20'
+    	remote.host = '192.168.33.15'
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
-  def tomcat = [:]
-    	tomcat.name = 'deploy'
-    	tomcat.host = '192.168.56.65,192.168.56.66'
-    	tomcat.user = 'ansible'
-    	tomcat.password = 'welcome'
-    	tomcat.allowAnyHosts = true
-
-
 pipeline {
     
 	agent none
@@ -67,7 +59,7 @@ pipeline {
 		    //SCP-Publisher Plugin (Optional)
 		    steps {
 		        //sshScript remote: remote, script: "abc.sh"  	
-			sshPut remote: remote, from: 'target/java-maven-1.0-SNAPSHOT.war', into: '/root/staging-server/webapps'		        
+			sshPut remote: remote, from: 'target/java-maven-1.0-SNAPSHOT.war', into: '/root/stagingServer/webapps'		        
 		    }
     	}
     	stage ('Integration-Test') {
@@ -97,7 +89,7 @@ pipeline {
 				}
 			}
 		}
-		stage ('Prod-Deploy'){
+		stage ('Prod-Deploy') {
 			agent {
 				label "slave"
             }
@@ -106,16 +98,16 @@ pipeline {
                 git pull origin master
                 cd ansibleRoles
                 ansible-playbook tomcat.yml''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'target', sourceFiles: '**/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
-
+				
+			}
 
 			steps {
 				sh label: '', script: '''cd target
                 rm -rf webapp.war
                 mv *.war webapp.war'''	
 		    }
-			}				
-			}
-			stage('Deploy-to-AnsibleStage') {
+
+		    stage('Deploy-to-AnsibleStage') {
 		     agent {
 		        label 'slave'
 		    }
@@ -131,3 +123,7 @@ pipeline {
 					archiveArtifacts '**/*.war'
 				}
 			}
+		}
+    	
+	}	
+}
