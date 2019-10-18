@@ -1,10 +1,18 @@
-def mvnHome
+  def mvnHome
 def remote = [:]
     	remote.name = 'deploy'
     	remote.host = '192.168.33.20'
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
+def tomcat = [:]
+    	tomcat.name = 'deploy'
+    	tomcat.host = '192.168.56.65,192.168.56.66'
+    	tomcat.user = 'ansible'
+    	tomcat.password = 'welcome'
+    	tomcat.allowAnyHosts = true
+
+
 pipeline {
     
 	agent none
@@ -23,14 +31,9 @@ pipeline {
 			    }
 		    }
 		}
-		stage ('Static Analysis'){
-			agent {
-				label "slave"
-            }
-			steps {
-				sh "'${mvnHome}/bin/mvn' clean cobertura:cobertura"			
-			}
-			post {
+		stage ('Static Analysis'){tomcat
+			atomcat				label "slave"
+       tomcat			stepstomcatsh "'${mvnHome}/bin/mvn' clean cobertura:cobertura"		tomcat			post {
                 success {
                     cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
                 }
@@ -94,9 +97,29 @@ pipeline {
 				label "slave"
             }
 			steps {
-				unstash 'Source'
-				sh "'${mvnHome}/bin/mvn' clean package"				
+				sshPublisher(publishers: [sshPublisherDesc(configName: 'ansiblemaster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''cd ~/ansible-files
+                git pull origin master
+                cd ansibleRoles
+                ansible-playbook tomcat.yml''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'target', sourceFiles: '**/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+
+
+			steps {
+				sh label: '', script: '''cd target
+                rm -rf webapp.war
+                mv *.war webapp.war'''	
+			}				
 			}
+			stage('Deploy-to-AnsibleStage') {
+		     agent {
+		        label 'slave'
+		    }
+		    //SSH-Steps-Plugin should be installed
+		    //SCP-Publisher Plugin (Optional)
+		    steps {
+		        //sshScript remote: remote, script: "abc.sh"  	
+			sshPut tomcat: tomcat, from: 'target/webapp.war', into: '/usr/share/tomcat/webapps'		        
+		    }
+    	}
 			post {
 				always {
 					archiveArtifacts '**/*.war'
