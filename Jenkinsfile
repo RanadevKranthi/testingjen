@@ -1,11 +1,11 @@
   def mvnHome
-def remote = [:]
+  def remote = [:]
     	remote.name = 'deploy'
     	remote.host = '192.168.33.20'
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
-def tomcat = [:]
+  def tomcat = [:]
     	tomcat.name = 'deploy'
     	tomcat.host = '192.168.56.65,192.168.56.66'
     	tomcat.user = 'ansible'
@@ -24,16 +24,21 @@ pipeline {
 		        label 'slave'
 		    }
 		    steps {
-			    git 'https://github.com/RanadevKranthi/Maven-Java-Project.git'
+			    git 'https://github.com/venkat09docs/Maven-Java-Project.git'
 			    stash 'Source'
 			    script{
-			        mvnHome = tool 'maven3.6'
+			        mvnHome = tool 'maven3'
 			    }
 		    }
 		}
-		stage ('Static Analysis'){tomcat
-			atomcat				label "slave"
-       tomcat			stepstomcatsh "'${mvnHome}/bin/mvn' clean cobertura:cobertura"		tomcat			post {
+		stage ('Static Analysis'){
+			agent {
+				label "slave"
+            }
+			steps {
+				sh "'${mvnHome}/bin/mvn' clean cobertura:cobertura"			
+			}
+			post {
                 success {
                     cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
                 }
