@@ -1,17 +1,10 @@
 def mvnHome
 def remote = [:]
     	remote.name = 'deploy'
-    	remote.host = '192.168.33.15'
+    	remote.host = '192.168.33.20'
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
-def remote = [:]
-    	tomcat.name = 'deploy'
-    	tomcat.host = '192.168.56.65'
-    	tomcat.user = 'tomcat'
-    	tomcat.password = 'welcome'
-    	tomcat.allowAnyHosts = true
-
 pipeline {
     
 	agent none
@@ -23,10 +16,10 @@ pipeline {
 		        label 'slave'
 		    }
 		    steps {
-			    git 'https://github.com/venkat09docs/Maven-Java-Project.git'
+			    git 'https://github.com/RanadevKranthi/Maven-Java-Project.git'
 			    stash 'Source'
 			    script{
-			        mvnHome = tool 'maven3'
+			        mvnHome = tool 'maven3.6'
 			    }
 		    }
 		}
@@ -66,7 +59,7 @@ pipeline {
 		    //SCP-Publisher Plugin (Optional)
 		    steps {
 		        //sshScript remote: remote, script: "abc.sh"  	
-			sshPut remote: remote, from: 'target/java-maven-1.0-SNAPSHOT.war', into: '/root/stagingServer/webapps'		        
+			sshPut remote: remote, from: 'target/java-maven-1.0-SNAPSHOT.war', into: '/root/staging-Server/webapps'		        
 		    }
     	}
     	stage ('Integration-Test') {
@@ -101,33 +94,12 @@ pipeline {
 				label "slave"
             }
 			steps {
-				sshPublisher(publishers: [sshPublisherDesc(configName: 'ansiblemaster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''cd ~/ansible-files
-                git pull origin master
-                cd ansibleRoles
-                ansible-playbook tomcat.yml''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'target', sourceFiles: '**/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
-				
+				unstash 'Source'
+				sh "'${mvnHome}/bin/mvn' clean deploy"				
 			}
-
-			steps {
-				sh label: '', script: '''cd target
-                rm -rf webapp.war
-                mv *.war webapp.war'''	
-		    }
-
-		    stage('Deploy') {
-		     agent {
-		        label 'slave'
-		    }
-		    //SSH-Steps-Plugin should be installed
-		    //SCP-Publisher Plugin (Optional)
-		    steps {
-		        //sshScript remote: remote, script: "abc.sh"  	
-			sshPut tomcat: tomcat, from: 'target/webapp.war', into: '/usr/share/tomcat/webapps'		        
-		    }
-    	}
 			post {
 				always {
-					archiveArtifacts '**/*.war'
+					deploy adapters: [tomcat8(credentialsId: 'tomcat8', path: '', url: 'http://192.168.33.20:8080')], contextPath: 'ranadev', war: '**/*.war'
 				}
 			}
 		}
