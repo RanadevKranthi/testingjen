@@ -1,7 +1,7 @@
 def mvnHome
 def remote = [:]
     	remote.name = 'deploy'
-    	remote.host = '192.168.33.20'
+    	remote.host = '192.168.33.15'
     	remote.user = 'root'
     	remote.password = 'vagrant'
     	remote.allowAnyHosts = true
@@ -16,7 +16,7 @@ pipeline {
 		        label 'slave'
 		    }
 		    steps {
-			    git 'https://github.com/RanadevKranthi/Maven-Java-Project.git'
+			    git 'https://github.com/venkat09docs/Maven-Java-Project.git'
 			    stash 'Source'
 			    script{
 			        mvnHome = tool 'maven3.6'
@@ -89,7 +89,7 @@ pipeline {
 				}
 			}
 		}
-		stage ('Deploy') {
+		stage ('Prod-Deploy') {
 			agent {
 				label "slave"
             }
@@ -99,7 +99,7 @@ pipeline {
 			}
 			post {
 				always {
-					deploy adapters: [tomcat8(credentialsId: 'tomcat8', path: '', url: 'http://192.168.33.20:8080')], contextPath: 'ranadev', war: '**/*.war'
+					archiveArtifacts '**/*.war'
 				}
 			}
 		}
