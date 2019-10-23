@@ -16,7 +16,7 @@ pipeline {
 		        label 'slave'
 		    }
 		    steps {
-			    git 'https://github.com/venkat09docs/Maven-Java-Project.git'
+			    git 'https://github.com/RanadevKranthi/Maven-Java-Project.git'
 			    stash 'Source'
 			    script{
 			        mvnHome = tool 'maven3.6'
@@ -44,7 +44,7 @@ pipeline {
 				sh "'${mvnHome}/bin/mvn' clean package"			
 			}
 			post {
-                always {
+                success {
                     junit 'target/surefire-reports/*.xml'
                     archiveArtifacts '**/*.war'
                     fingerprint '**/*.war'
@@ -89,7 +89,7 @@ pipeline {
 				}
 			}
 		}
-		stage ('Prod-Deploy') {
+		stage ('Deploy-to-staging') {
 			agent {
 				label "slave"
             }
@@ -98,11 +98,31 @@ pipeline {
 				sh "'${mvnHome}/bin/mvn' clean deploy"				
 			}
 			post {
-				always {
+				success {
 					archiveArtifacts '**/*.war'
 				}
 			}
+			}
+
+			stage ('Deploy-to-ansible') {
+			agent {
+				label "slave"
+            }
+            steps{
+				sh label: '', script: '''cd target
+                                         rm -rf webapp.war
+                                         mv *.war webapp.war'''
+		        }
+
+			post {
+				success {
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'ansiblemaster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''cd ~/ansible-files
+                git pull origin master
+                cd ansibleRoles
+                ansible-playbook tomcat.yml''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'target', sourceFiles: '**/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				}
+			}
+
 		}
-    	
-	}	
-}
+    }
+}	
