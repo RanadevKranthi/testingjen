@@ -1,5 +1,7 @@
 pipeline {
-    agent none
+    agent {
+    lable "master"
+    }
      stages {
     stage ('Sourcecode Management') {
        
