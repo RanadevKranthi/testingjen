@@ -10,6 +10,7 @@ pipeline {
            sh "mvn clean package"
            stash 'Source'
        }
+    }
      stage ("Docker image Building") {
         agent{
             label "docker-engine"
