@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label "slave"
+        label any
     }
 stages {
     stage ('Sourcecode Management') {
