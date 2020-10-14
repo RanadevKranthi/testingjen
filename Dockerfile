@@ -1,4 +1,4 @@
-# Pull base image.
+# Pull base image.as ubuntu
 FROM ubuntu
 
 # Install Nginx.
