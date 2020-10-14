@@ -3,8 +3,8 @@ FROM centos:7
 
 # Install Nginx.
 RUN 
-  apt-get update && \
-  apt-get install -y nginx && \
+  yum -y update && \
+  yum install -y nginx && \
   
 # Expose ports.
 EXPOSE 80
