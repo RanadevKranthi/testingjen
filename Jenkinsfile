@@ -1,8 +1,6 @@
 pipeline {
-    agent {
-        label any
-    }
-stages {
+    agent none
+     stages {
     stage ('Sourcecode Management') {
        
        steps {
