@@ -17,7 +17,7 @@ pipeline {
         }
         steps {
             unstash "Source"
-            sh "dokcer image build . -t ranadev:${env.BUILD_ID}"   
+            sh "docker image build . -t ranadev:${env.BUILD_ID}"   
            
        }
 
