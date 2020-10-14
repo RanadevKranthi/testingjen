@@ -1,21 +1,24 @@
-FROM centos
+# Pull base image.
+FROM dockerfile/ubuntu
 
-MAINTAINER rns@rnstech.com
+# Install Nginx.
+RUN \
+  add-apt-repository -y ppa:nginx/stable && \
+  apt-get update && \
+  apt-get install -y nginx && \
+  rm -rf /var/lib/apt/lists/* && \
+  echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \
+  chown -R www-data:www-data /var/lib/nginx
 
-RUN yum update -y
-RUN yum -y install java
-RUN java -version
+# Define mountable directories.
+VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx", "/var/www/html"]
 
-#RUN mkdir /opt/tomcat/
+# Define working directory.
+WORKDIR /etc/nginx
 
-WORKDIR /opt
-RUN curl -O http://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.43/bin/apache-tomcat-8.5.43.tar.gz
-RUN tar xzvf apache-tomcat-8.5.43.tar.gz -C /opt/
-RUN cp -R /opt/apache-tomcat-8.5.43/ /opt/tomcat
+# Define default command.
+CMD ["nginx"]
 
-WORKDIR /opt/tomcat/webapps
-COPY target/*.war /opt/tomcat/webapps/webapp.war
-
-EXPOSE 8080
-
-ENTRYPOINT ["/opt/tomcat/bin/catalina.sh", "run"]
+# Expose ports.
+EXPOSE 80
+EXPOSE 443
